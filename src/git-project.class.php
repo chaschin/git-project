@@ -9,6 +9,7 @@
  * @author Alexey Chaschin <alexey.chaschin@gmail.com>
  */
 
+use Exception;
 use CzProject\GitPhp\GitRepository;
 
 /**
@@ -74,25 +75,15 @@ class Git_Project {
      *
      * @param string $repo_path Repository path.
      * @return void
+     * @throws Exception On error.
      */
     protected function __construct( string $repo_path ) {
-        $this->repo_path = $repo_path;
+        var_dump( $repo_path );
         try {
-            $this->repo = new GitRepository( self::$repo_path );
-        } catch (Exception $e) {
+            $this->repo = new GitRepository( $repo_path );
+        } catch ( Exception $e ) {
             wp_die( $e->getMessage() );
         }
-
-        $this->repo->fetch( 'origin' );
-        $this->current_branch = $this->repo->getCurrentBranchName();
-
-        $branches = $this->repo->getLocalBranches();
-        foreach ( $branches as $branch ) {
-            echo $branch . '<br>';
-        }
-        
-        // $status = $repo->execute('status');
-        // echo "Статус репозитория:<br>" . implode("\n", $status) . "<br>";
     }
 
     /**
@@ -102,8 +93,6 @@ class Git_Project {
      * @return void
      */
     public static function init( string $repo_path ) {
-        self::$repo_path = $repo_path;
-
         if ( is_user_logged_in() ) {
             $user_id = get_current_user_id();
             if ( wc_user_has_role( $user_id, 'administrator' ) !== true ) {
@@ -115,7 +104,24 @@ class Git_Project {
             exit;
         }
 
-        
+        $git = self::get_instance( $repo_path );
+        $git->get_local_branches();
+    }
+
+    public function get_local_branches() {
+        // $status = $repo->execute('status');
+        // echo "Repository status:<br>" . implode("<br>", $status) . "<br>";
+        $this->current_branch = $this->repo->getCurrentBranchName();
+        var_dump( $this->current_branch );
+        // var_dump( $this->repo_path );
+        var_dump( $this->repo->getRepositoryPath() );
+        // $this->repo->fetch( [ 'origin', 'master' ] );
+
+
+        $branches = $this->repo->getLocalBranches();
+        foreach ( $branches as $branch ) {
+            echo $branch . '<br>';
+        }
     }
     
     public function switch_branch( string $branch_name ) {
