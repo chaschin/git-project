@@ -11,6 +11,7 @@
 
 use Exception;
 use CzProject\GitPhp\GitRepository;
+use Git_Project\Template;
 
 /**
  * Git_Project class.
@@ -78,7 +79,6 @@ class Git_Project {
      * @throws Exception On error.
      */
     protected function __construct( string $repo_path ) {
-        var_dump( $repo_path );
         try {
             $this->repo = new GitRepository( $repo_path );
         } catch ( Exception $e ) {
@@ -105,27 +105,45 @@ class Git_Project {
         }
 
         $git = self::get_instance( $repo_path );
+
+        $git->current_branch = $git->repo->getCurrentBranchName();
+        
+        if ( isset( $_GET['action'] ) && isset( $_GET['branch'] ) ) {
+            $action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
+            $branch = sanitize_text_field( wp_unslash( $_GET['branch'] ) );
+
+            switch ( $action ) {
+                case 'checkout':
+                    $git->switch_branch( $branch );
+            }
+        }
+
         $git->get_local_branches();
     }
 
     public function get_local_branches() {
-        // $status = $repo->execute('status');
-        // echo "Repository status:<br>" . implode("<br>", $status) . "<br>";
-        $this->current_branch = $this->repo->getCurrentBranchName();
-        var_dump( $this->current_branch );
-        // var_dump( $this->repo_path );
-        var_dump( $this->repo->getRepositoryPath() );
         // $this->repo->fetch( [ 'origin', 'master' ] );
+        
+        $status = $this->repo->execute( 'status' );
+        $data   = [
+            'git_project_url' => WP_HOME . '/git-project',
+            'current_branch'  => $this->current_branch,
+            'branches'        => $this->repo->getLocalBranches(),
+            'status'          => implode( '<br>', $status ),
+        ];
 
+        $template = Template::get_instance();
+        $content  = $template->render( 'list-branches', $data );
 
-        $branches = $this->repo->getLocalBranches();
-        foreach ( $branches as $branch ) {
-            echo $branch . '<br>';
-        }
+        echo $content;
     }
     
     public function switch_branch( string $branch_name ) {
-        $repo->checkout( $branch_name );
-        echo "Переключились на ветку: " . $newBranch . "\n";
+        // $this->repo->fetch();
+        // $this->repo->pull('origin');
+        if ( $this->current_branch !== $branch_name ) {
+            $this->repo->checkout( $branch_name );
+            $this->current_branch = $this->repo->getCurrentBranchName();
+        }
     }
 }

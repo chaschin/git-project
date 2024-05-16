@@ -8,22 +8,13 @@ define( 'GIT_PROJECT_REAL_PATH', __DIR__ . '/' );
 define( 'GIT_PROJECT_PATH', dirname( $script_path ) . '/' );
 
 $git_project_path = str_replace( 'git-project/', '', GIT_PROJECT_PATH );
-$wp_config_path   = realpath( $git_project_path . 'wp-config.php' );
-$wp_config_path_2 = realpath( $git_project_path . '../wp-config.php' );
 $repo_path        = realpath( GIT_PROJECT_REAL_PATH . '../' );
-
-if ( $wp_config_path !== false ) {
-    require_once $wp_config_path;
-} else if ( $wp_config_path_2 !== false ) {
-    require_once $wp_config_path_2;
-} else {
-    die( 'The WP configuration file does not exist.' );
-}
+$repo_path        = '/home/j/webserver/allthewayup.nl/repo/allthewayup';
 
 define( 'WP_USE_THEMES', false );
 
-require_once ABSPATH . 'wp-load.php';
-require_once ABSPATH . 'wp-admin/includes/plugin.php';
+require_once $git_project_path . 'wp-load.php';
+require_once $git_project_path . 'wp-admin/includes/plugin.php';
 
 $required_plugins = [
     'atwu-dev-tools/atwu-dev-tools.php',

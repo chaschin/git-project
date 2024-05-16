@@ -1,0 +1,17 @@
+<h3>{{ status | raw }}</h3>
+<table>
+{% for branch in branches %}
+    <tr>
+        <td>
+            {% if current_branch == branch %}<span style="color: red;">{% endif %}
+            {{ branch }}
+            {% if current_branch == branch %}</span>{% endif %}
+        </td>
+        <td>
+            {% if current_branch != branch %}
+                <a href="{{ git_project_url }}?branch={{ branch }}&action=checkout">Checkout</a>
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
